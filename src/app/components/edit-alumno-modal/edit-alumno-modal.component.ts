@@ -1,8 +1,9 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { AlumnosService } from 'src/app/services/alumnos.service';
 import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
 //import { alumnosOutput } from 'src/app/other/users';
 
 @Component({
@@ -11,11 +12,12 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./edit-alumno-modal.component.scss']
 })
 
-export class EditAlumnoModalComponent implements OnInit {
+export class EditAlumnoModalComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   editForm: FormGroup;
   isSelected: boolean = false;
   bodyCopy: string = 'No se ha seleccionado ningún alumno aún';
+  editAlumnoSub: Subscription;
 
   constructor(
     public dialogRef: MatDialogRef<EditAlumnoModalComponent>,
@@ -41,7 +43,7 @@ export class EditAlumnoModalComponent implements OnInit {
   onSubmit() {
     this.isLoading = true;
     let alumno = this.editForm?.value;
-    this.alumnoService.editAlumno(alumno, this.data.alumnos.id)
+    this.editAlumnoSub = this.alumnoService.editAlumno(alumno, this.data.alumnos.id)
     .subscribe({
       next: (response) => {
         console.log(response);
@@ -57,6 +59,10 @@ export class EditAlumnoModalComponent implements OnInit {
         this.isLoading = false;
       }
     })
+  }
+
+  ngOnDestroy(): void {
+    this.editAlumnoSub.unsubscribe();
   }
 
 }

@@ -3,7 +3,6 @@ import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { AlumnosService } from 'src/app/services/alumnos.service';
 import { ToastrService } from 'ngx-toastr';
-import { alumnosOutput } from 'src/app/other/users';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -14,7 +13,7 @@ import { Subscription } from 'rxjs';
 export class AddAlumnoModalComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   addForm: FormGroup;
-  postAlumnoObs:Subscription;
+  postAlumnoSub:Subscription;
 
   constructor (
     public dialogRef: MatDialogRef<AddAlumnoModalComponent>,
@@ -35,7 +34,7 @@ export class AddAlumnoModalComponent implements OnInit, OnDestroy {
   onSubmit() {
     this.isLoading = true;
     let alumno = this.addForm?.value;
-    this.postAlumnoObs = this.alumnoService.postAlumno(alumno)
+    this.postAlumnoSub = this.alumnoService.postAlumno(alumno)
       .subscribe({
         next: (response) => {
           console.log(response);
@@ -55,7 +54,7 @@ export class AddAlumnoModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.postAlumnoObs.unsubscribe();
+    this.postAlumnoSub.unsubscribe();
   }
 
 }

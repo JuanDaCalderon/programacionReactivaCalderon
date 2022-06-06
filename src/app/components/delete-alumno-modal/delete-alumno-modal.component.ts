@@ -1,17 +1,19 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { AlumnosService } from 'src/app/services/alumnos.service';
 import { ToastrService } from 'ngx-toastr';
 import { alumnosOutput } from 'src/app/other/users';
+import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-delete-alumno-modal',
   templateUrl: './delete-alumno-modal.component.html',
   styleUrls: ['./delete-alumno-modal.component.scss']
 })
-export class DeleteAlumnoModalComponent implements OnInit {
+export class DeleteAlumnoModalComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   isSelected: boolean = false;
   bodyCopy: string = 'Selecciona el alumno que quieres eliminar';
+  deleteAlumno:Subscription;
   constructor(
     public dialogRef: MatDialogRef<DeleteAlumnoModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: {dialog:MatDialog, alumnos: alumnosOutput []},
@@ -31,8 +33,7 @@ export class DeleteAlumnoModalComponent implements OnInit {
   onSubmit() {
     this.isLoading = true;
     for (const index in this.data.alumnos) {
-      //alumnos.push(this.data.alumnos[index]);
-      this.alumnoService.deleteAlumno(this.data.alumnos[index])
+      this.deleteAlumno = this.alumnoService.deleteAlumno(this.data.alumnos[index])
         .subscribe({
           next: (response) => {
             console.log(response);
@@ -49,6 +50,10 @@ export class DeleteAlumnoModalComponent implements OnInit {
           }
         });
     }
+  }
+
+  ngOnDestroy(): void {
+    this.deleteAlumno.unsubscribe();
   }
 
 }

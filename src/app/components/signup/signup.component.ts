@@ -1,8 +1,9 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AccessService } from 'src/app/services/access.service';
 import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-signup',
@@ -10,10 +11,11 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./signup.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class SignupComponent implements OnInit {
+export class SignupComponent implements OnInit, OnDestroy {
   //emailFormControl = new FormControl('', [Validators.required, Validators.email]);
   signupForm: FormGroup;
   isLoading: boolean = false;
+  signupSub: Subscription;
   constructor(private router: Router, private loginService: AccessService, private toastr: ToastrService) { }
 
   ngOnInit(): void {
@@ -41,7 +43,7 @@ export class SignupComponent implements OnInit {
         admin: this.signupForm?.value.admin,
         phone: this.signupForm?.value.phone
       };
-      this.loginService.signup(user)
+      this.signupSub = this.loginService.signup(user)
       .subscribe({
         next: (response) => {
           console.log(response);
@@ -60,6 +62,10 @@ export class SignupComponent implements OnInit {
         }
       });;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.signupSub.unsubscribe();
   }
 
 }

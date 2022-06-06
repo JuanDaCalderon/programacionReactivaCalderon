@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -11,6 +11,7 @@ import { DeleteAlumnoModalComponent } from '../delete-alumno-modal/delete-alumno
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { AlumnosService } from 'src/app/services/alumnos.service';
 import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-alumnos',
@@ -18,7 +19,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./alumnos.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class AlumnosComponent implements OnInit, AfterViewInit {
+export class AlumnosComponent implements OnInit, AfterViewInit, OnDestroy {
   titulo: string = 'Alumnos';
   data: alumnosOutput[] = [];
   columnsToDisplay: string[] = ['select', 'id', 'nombre', 'curso', 'clases', 'avatar'];
@@ -27,14 +28,20 @@ export class AlumnosComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   dataSource = new MatTableDataSource<alumnosOutput>(this.data);
   isLoadingResults: boolean = true;
-
+  getAlumnosSub:Subscription;
   getAlumnosData() {
-    this.alumnoService.getAlumnos().subscribe(response => {
+    this.getAlumnosSub = this.alumnoService.getAlumnos().subscribe(response => {
       this.data = response;
       this.dataSource.data = response;
       this.isLoadingResults = false;
     })
   }
+
+  appStatus = new Promise((resolve, rejects) => {
+    setTimeout(function check(){
+        resolve('Toda la información cargada');
+    },1000);
+  });
 
   constructor(private alumnoService: AlumnosService, public dialog: MatDialog, private toastr: ToastrService) {
     this.getAlumnosData();
@@ -44,7 +51,6 @@ export class AlumnosComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
-    /* this.alumnosTable.paginator = this.paginator; */
   }
 
   isAllSelected() {
@@ -119,5 +125,9 @@ export class AlumnosComponent implements OnInit, AfterViewInit {
     this.getAlumnosData();
     this.alumnosTable.renderRows();
     this.toastr.success('Alumnos actualizados Correctamente');
+  }
+
+  ngOnDestroy(): void {
+    this.getAlumnosSub.unsubscribe();
   }
 }
